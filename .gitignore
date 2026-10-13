@@ -1,0 +1,14 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+models/base/
+models/finetuned/
+data/vectorstore/
+data/processed/
+logs/
+*.egg-info/
+conversational_mcp/build/
+.pytest_cache/
+notebooks/.ipynb_checkpoints/

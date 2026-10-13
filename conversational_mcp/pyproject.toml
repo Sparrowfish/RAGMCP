@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conversational-mcp"
+version = "0.1.0"
+description = "Domain-agnostic conversational orchestration for MCP tools"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.5"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+mcp = ["mcp>=1.0,<2"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools]
+packages = ["conversational_mcp", "conversational_mcp.examples", "conversational_mcp.tools"]
+
+[tool.setuptools.package-dir]
+conversational_mcp = "."
+"conversational_mcp.examples" = "examples"

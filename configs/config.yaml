@@ -1,0 +1,37 @@
+model:
+  name: "mistralai/Mistral-7B-Instruct-v0.2"
+  cache_dir: "./models/base"
+  load_in_4bit: true
+  device: "cuda"
+
+rag:
+  chunk_size: 512
+  chunk_overlap: 64
+  top_k: 3
+  vectorstore_path: "./data/vectorstore"
+  embedding_model: "nomic-ai/nomic-embed-text-v1"
+
+mcp:
+  enabled: true
+  # Path to a Python MCP server script. Set enabled=true after configuring it.
+  server_path: "./conversational_mcp/mock_server.py"
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+
+finetune:
+  output_dir: "./models/finetuned"
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  learning_rate: 2.0e-4
+  num_epochs: 3
+  batch_size: 1
+  gradient_accumulation_steps: 4
+  max_seq_length: 2048
+
+logging:
+  level: "INFO"
+  log_dir: "./logs"
