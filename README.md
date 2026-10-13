@@ -54,8 +54,7 @@ src/
   mcp/                 bridge between the chatbot and MCP tools
 
 conversational_mcp/
-  engine.py            compact, transport-neutral conversation engine
-  tools/               reusable workflow components and mock schemas
+  tools/               runtime workflow engine, schemas, validation, sessions
   mock_server.py       safe MCP server used for local demonstration
 
 tests/                 focused unit tests for MCP integration and tool flow
@@ -173,9 +172,5 @@ Replace the mock server with any MCP-compatible stdio server by changing
 ## Tests
 
 ```bash
-venv\Scripts\python -m pytest tests conversational_mcp/tests -q
+venv\Scripts\python -m pytest tests -q
 ```
-
-## License
-
-Add a license appropriate for your public repository before publishing.

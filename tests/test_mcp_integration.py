@@ -1,49 +1,41 @@
 from types import SimpleNamespace
 
 import pytest
-from pydantic import BaseModel
 
-from conversational_mcp import ConversationEngine, ToolDefinition, ToolRegistry, ToolResult
+from conversational_mcp.tools import ArgumentExtractor, ToolFlowManager
 from src.mcp.integration import registry_from_mcp_tools
 
 
-class EchoInput(BaseModel):
-    text: str
-
-
 @pytest.mark.asyncio
-async def test_engine_can_start_a_tool_selected_by_the_chat_router():
-    async def executor(name, arguments):
-        return ToolResult("completed", "Done", arguments, name)
-
-    engine = ConversationEngine(
-        ToolRegistry([ToolDefinition("echo", EchoInput, "Echo text")]),
-        executor,
-        extractor=lambda message, tool_name: {"text": message},
-    )
-
-    response = await engine.start_for_tool("user-1", "hello", "echo")
-
-    assert response.tool_name == "echo"
-    assert response.state.value == "done"
-    assert response.result.data == {"text": "hello"}
-
-
-def test_registry_is_created_from_mcp_tool_schema():
+async def test_discovered_mcp_tool_uses_the_runtime_flow_manager():
     tool = SimpleNamespace(
-        name="create_note",
-        description="Create a note",
-        inputSchema={
-            "type": "object",
-            "properties": {"title": {"type": "string"}, "pinned": {"type": "boolean"}},
-            "required": ["title"],
-        },
+        name="echo",
+        description="Echo text",
+        inputSchema={"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
     )
+    calls = []
 
-    registry = registry_from_mcp_tools([tool])
-    definition = registry.get("create_note")
+    async def executor(name, arguments):
+        calls.append((name, arguments))
+        return {"status": "completed", "message": "Done", "data": arguments}
 
-    assert definition.requires_confirmation is True
-    assert definition.input_model(title="A note").title == "A note"
-    with pytest.raises(Exception):
-        definition.input_model()
+    flow = ToolFlowManager(
+        registry_from_mcp_tools([tool]), executor,
+        extractor=ArgumentExtractor(lambda _: '{"text":"hello"}'),
+    )
+    pending = await flow.start("user-1", "echo", "hello")
+    assert pending.state == "confirming"
+
+    response = await flow.confirm(pending.session_id, True)
+    assert response.state == "done"
+    assert calls == [("echo", {"text": "hello"})]
+
+
+def test_discovered_schema_marks_tools_for_confirmation():
+    tool = SimpleNamespace(
+        name="create_note", description="Create a note",
+        inputSchema={"type": "object", "properties": {"title": {"type": "string"}}, "required": ["title"]},
+    )
+    definition = registry_from_mcp_tools([tool]).get("create_note")
+    assert definition.metadata.requires_confirmation is True
+    assert definition.schema(title="A note").title == "A note"

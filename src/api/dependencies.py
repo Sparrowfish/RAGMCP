@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from src.rag.vectorstore import VectorStore
-from conversational_mcp import ConversationEngine
 from conversational_mcp.stdio import MCPStdioClient
+from conversational_mcp.tools import ToolFlowManager
 
 
 @dataclass
@@ -16,7 +16,7 @@ class AppState:
     model: Optional[AutoModelForCausalLM] = None
     tokenizer: Optional[AutoTokenizer] = None
     vectorstore: Optional[VectorStore] = None
-    mcp_engine: Optional[ConversationEngine] = None
+    mcp_engine: Optional[ToolFlowManager] = None
     mcp_client: Optional[MCPStdioClient] = None
     cfg: dict = field(default_factory=dict)
 

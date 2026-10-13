@@ -18,7 +18,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.setuptools]
-packages = ["conversational_mcp", "conversational_mcp.examples", "conversational_mcp.tools"]
+packages = ["conversational_mcp", "conversational_mcp.tools"]
 
 [tool.setuptools.package-dir]
 conversational_mcp = "."

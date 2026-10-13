@@ -26,7 +26,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
         if not state.mcp_loaded:
             raise HTTPException(status_code=503, detail="MCP tools are not configured.")
         if request.tool_confirmation is None:
-            tool_response = await state.mcp_engine.continue_session(request.tool_session_id, request.message)
+            tool_response = await state.mcp_engine.handle(request.tool_session_id, request.message)
         else:
             tool_response = await state.mcp_engine.confirm(request.tool_session_id, request.tool_confirmation)
         return ChatResponse(
@@ -37,8 +37,8 @@ async def chat(request: ChatRequest) -> ChatResponse:
             tool_used=True,
             tool_name=tool_response.tool_name,
             tool_session_id=tool_response.session_id,
-            tool_state=tool_response.state.value if tool_response.state else None,
-            tool_result=tool_response.result.as_dict() if tool_response.result else None,
+            tool_state=tool_response.state,
+            tool_result=tool_response.result,
         )
 
     # Let the model choose the information source before retrieving or acting.
@@ -49,8 +49,8 @@ async def chat(request: ChatRequest) -> ChatResponse:
         )
         route_kind = route.kind
         if route.kind == "tool":
-            tool_response = await state.mcp_engine.start_for_tool(
-                request.user_id, request.message, route.tool_name,
+            tool_response = await state.mcp_engine.start(
+                request.user_id, route.tool_name, request.message,
             )
             return ChatResponse(
                 response=tool_response.message,
@@ -60,8 +60,8 @@ async def chat(request: ChatRequest) -> ChatResponse:
                 tool_used=True,
                 tool_name=tool_response.tool_name,
                 tool_session_id=tool_response.session_id,
-                tool_state=tool_response.state.value if tool_response.state else None,
-                tool_result=tool_response.result.as_dict() if tool_response.result else None,
+                tool_state=tool_response.state,
+                tool_result=tool_response.result,
             )
     elif request.use_rag and state.vectorstore_loaded:
         # Preserve retrieval for deployments where MCP has not been enabled yet.
